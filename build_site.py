@@ -202,6 +202,29 @@ def build_subpage_shell() -> str:
 """
 
 
+def collect_internal_paths(*html_parts: str) -> set[str]:
+    paths: set[str] = set()
+    for html in html_parts:
+        for m in re.finditer(r'href="(?:https?://star-motors\.ru|/)([^"#?]*)"', html):
+            path = m.group(1).strip("/")
+            if not path or path.startswith(("wp-content/", "wp-includes/")):
+                continue
+            if path.rstrip("/") == "ceny":
+                continue
+            paths.add(path)
+    return paths
+
+
+def write_subpage_shells(paths: set[str], shell: str) -> int:
+    count = 0
+    for path in sorted(paths):
+        dest = ROOT / path / "index.html"
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(shell, encoding="utf-8")
+        count += 1
+    return count
+
+
 def build_prices_entry_content() -> str:
     data = json.loads((ROOT / "data" / "site-data.json").read_text(encoding="utf-8"))
     section_ids = {
@@ -295,10 +318,15 @@ def build_ceny_main() -> str:
 
 
 def main() -> None:
-    header = sanitize(EX.joinpath("header.html").read_text(encoding="utf-8"))
+    raw_header = EX.joinpath("header.html").read_text(encoding="utf-8")
+    raw_footer = EX.joinpath("footer.html").read_text(encoding="utf-8")
+    header = sanitize(raw_header)
     main_html = build_ceny_main()
-    footer = sanitize(EX.joinpath("footer.html").read_text(encoding="utf-8"))
+    footer = sanitize(raw_footer)
     inline_styles = build_inline_styles()
+    shell = build_subpage_shell()
+    subpaths = collect_internal_paths(raw_header, raw_footer)
+    subpages = write_subpage_shells(subpaths, shell)
 
     page = f"""<!DOCTYPE html>
 <html lang="ru-RU">
@@ -329,7 +357,9 @@ def main() -> None:
     ROOT.joinpath("index.html").write_text(page, encoding="utf-8")
     ROOT.joinpath("404.html").write_text(shell, encoding="utf-8")
     ROOT.joinpath(".nojekyll").write_text("", encoding="utf-8")
-    print("Built index.html, 404.html (subpages + chat) + css/site.bundle.css")
+    print(
+        f"Built index.html, 404.html, {subpages} subpages with chat + css/site.bundle.css"
+    )
 
 
 if __name__ == "__main__":
