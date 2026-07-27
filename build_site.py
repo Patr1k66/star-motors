@@ -6,17 +6,41 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 EX = ROOT / "_extracted"
+SITE_BASE = "/star-motors/"
+PAGES_ORIGIN = "https://patr1k66.github.io/star-motors/"
 
 FONT_EXO = (
     "https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap"
 )
-LOCAL_STYLES = [
-    "css/bootstrap.min.css",
-    "css/font-awesome.css",
-    "css/menu-image.css",
-    "css/theme.css",
-    "css/demo.css",
+FONT_AWESOME = (
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css"
+)
+BUNDLE_SOURCES = [
+    "reset.css",
+    "bootstrap.min.css",
+    "menu-image.css",
+    "theme.css",
 ]
+
+
+def asset(path: str) -> str:
+    return f"{SITE_BASE}{path.lstrip('/')}"
+
+
+def clean_css(text: str) -> str:
+    text = text.lstrip("\ufeff").replace("\ufeff", "")
+    text = re.sub(r"@charset[^;]+;", "", text)
+    text = re.sub(r"@import[^;]+;", "", text)
+    return text.strip()
+
+
+def bundle_css() -> None:
+    parts = [
+        clean_css((ROOT / "css" / name).read_text(encoding="utf-8"))
+        for name in BUNDLE_SOURCES
+    ]
+    out = "\n\n".join(parts)
+    (ROOT / "css" / "site.bundle.css").write_text(out, encoding="utf-8")
 
 
 def sanitize(html: str) -> str:
@@ -125,22 +149,23 @@ def main() -> None:
     # inject prices before closing main
     main_html = main_html.replace("</main>", prices + "\n</main>", 1)
 
-    styles_block = "\n".join(
-        f'  <link rel="stylesheet" href="{href}" />' for href in LOCAL_STYLES
-    )
+    bundle_css()
 
     page = f"""<!DOCTYPE html>
 <html lang="ru-RU">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="{PAGES_ORIGIN}" />
   <title>Star Motors — автосервис в Строгино</title>
   <meta name="description" content="Автосервис Star Motors — ремонт и ТО иномарок в Москве, Строгино." />
   <link rel="icon" href="https://star-motors.ru/wp-content/themes/wordpost_new1/images/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="{FONT_EXO}" rel="stylesheet" />
-{styles_block}
+  <link rel="stylesheet" href="{FONT_AWESOME}" />
+  <link rel="stylesheet" href="{asset('css/site.bundle.css')}" />
+  <link rel="stylesheet" href="{asset('css/demo.css')}" />
 </head>
 <body class="home wp-theme-wordpost_new1 wordpost" id="top">
 {header}
@@ -148,12 +173,12 @@ def main() -> None:
 <div class="clear"></div>
 {footer}
 <p class="demo-note">Демо-копия с AI-консультантом · данные с <a href="https://star-motors.ru/" target="_blank" rel="noopener">star-motors.ru</a></p>
-<script src="js/chat-widget.js" data-bot-id="star-motors" data-api-url="https://chat-bot-api-lovat.vercel.app" data-auto-open-ms="5000" defer></script>
+<script src="{asset('js/chat-widget.js')}" data-bot-id="star-motors" data-api-url="https://chat-bot-api-lovat.vercel.app" data-auto-open-ms="5000" defer></script>
 </body>
 </html>
 """
     ROOT.joinpath("index.html").write_text(page, encoding="utf-8")
-    print("Built index.html from original Star Motors markup")
+    print("Built index.html + css/site.bundle.css")
 
 
 if __name__ == "__main__":
