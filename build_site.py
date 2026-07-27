@@ -34,13 +34,23 @@ def clean_css(text: str) -> str:
     return text.strip()
 
 
-def bundle_css() -> None:
+def bundle_css() -> str:
     parts = [
         clean_css((ROOT / "css" / name).read_text(encoding="utf-8"))
         for name in BUNDLE_SOURCES
     ]
     out = "\n\n".join(parts)
     (ROOT / "css" / "site.bundle.css").write_text(out, encoding="utf-8")
+    return out
+
+
+def build_inline_styles() -> str:
+    bundle_css()
+    parts = [
+        (ROOT / "css" / "site.bundle.css").read_text(encoding="utf-8"),
+        (ROOT / "css" / "demo.css").read_text(encoding="utf-8"),
+    ]
+    return "<style>\n" + "\n".join(parts) + "\n</style>"
 
 
 def sanitize(html: str) -> str:
@@ -149,7 +159,7 @@ def main() -> None:
     # inject prices before closing main
     main_html = main_html.replace("</main>", prices + "\n</main>", 1)
 
-    bundle_css()
+    inline_styles = build_inline_styles()
 
     page = f"""<!DOCTYPE html>
 <html lang="ru-RU">
@@ -164,8 +174,9 @@ def main() -> None:
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="{FONT_EXO}" rel="stylesheet" />
   <link rel="stylesheet" href="{FONT_AWESOME}" />
-  <link rel="stylesheet" href="{asset('css/site.bundle.css')}" />
-  <link rel="stylesheet" href="{asset('css/demo.css')}" />
+  {inline_styles}
+  <link rel="stylesheet" href="{PAGES_ORIGIN}css/site.bundle.css" />
+  <link rel="stylesheet" href="{PAGES_ORIGIN}css/demo.css" />
 </head>
 <body class="home wp-theme-wordpost_new1 wordpost" id="top">
 {header}
@@ -173,7 +184,7 @@ def main() -> None:
 <div class="clear"></div>
 {footer}
 <p class="demo-note">Демо-копия с AI-консультантом · данные с <a href="https://star-motors.ru/" target="_blank" rel="noopener">star-motors.ru</a></p>
-<script src="{asset('js/chat-widget.js')}" data-bot-id="star-motors" data-api-url="https://chat-bot-api-lovat.vercel.app" data-auto-open-ms="5000" defer></script>
+<script src="{PAGES_ORIGIN}js/chat-widget.js" data-bot-id="star-motors" data-api-url="https://chat-bot-api-lovat.vercel.app" data-auto-open-ms="5000" defer></script>
 </body>
 </html>
 """
