@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble demo index.html from original star-motors.ru markup."""
+"""Assemble demo index.html matching star-motors.ru/ceny/ layout."""
 import json
 import re
 from pathlib import Path
@@ -34,9 +34,34 @@ def clean_css(text: str) -> str:
     return text.strip()
 
 
+def rewrite_css_urls(text: str) -> str:
+    """Point theme assets to GitHub Pages copies."""
+    theme_base = f"{PAGES_ORIGIN}img/theme/"
+    for prefix in (
+        "https://star-motors.ru/wp-content/themes/wordpost_new1/img/",
+        "https://star-motors.ru/wp-content/themes/wordpost_new1/images/",
+        "//star-motors.ru/wp-content/themes/wordpost_new1/img/",
+        "//star-motors.ru/wp-content/themes/wordpost_new1/images/",
+    ):
+        text = text.replace(prefix, theme_base)
+    for i in range(1, 10):
+        text = text.replace(
+            f"https://star-motors.ru/wp-content/uploads/2016/07/{i}.png",
+            f"{PAGES_ORIGIN}img/services/{i}.png",
+        )
+    # Fix broken quote in some gradient rules
+    text = text.replace(
+        "voronezh_autoservice11-1024x689.jpg')",
+        "voronezh_autoservice11-1024x689.jpg)",
+    )
+    return text
+
+
 def bundle_css() -> str:
     parts = [
-        clean_css((ROOT / "css" / name).read_text(encoding="utf-8"))
+        rewrite_css_urls(
+            clean_css((ROOT / "css" / name).read_text(encoding="utf-8"))
+        )
         for name in BUNDLE_SOURCES
     ]
     out = "\n\n".join(parts)
@@ -55,7 +80,6 @@ def build_inline_styles() -> str:
 
 def sanitize(html: str) -> str:
     html = re.sub(r'\sonclick="[^"]*"', "", html)
-    html = re.sub(r"<form[^>]*wpcf7[^>]*>.*?</form>", "", html, flags=re.S)
     html = re.sub(r"<noscript>.*?</noscript>", "", html, flags=re.S)
     html = html.replace("</noscript>", "")
     html = re.sub(
@@ -74,15 +98,39 @@ def sanitize(html: str) -> str:
         html,
     )
     html = re.sub(r'\sclass="[^"]*lazyload[^"]*"', "", html)
+    html = re.sub(
+        r'<fieldset class="hidden-fields-container">.*?</fieldset>',
+        "",
+        html,
+        flags=re.S,
+    )
+    html = html.replace('action="/#wpcf7-f10252-o1"', 'action="#"')
+    html = html.replace('action="https://star-motors.ru/"', 'action="#"')
     html = html.replace('href="/ceny/"', 'href="#catalog"')
     html = html.replace('href="https://star-motors.ru/ceny/"', 'href="#catalog"')
     html = html.replace('href="/"', 'href="#top"')
-    html = html.replace('action="https://star-motors.ru/"', 'action="#"')
     html = re.sub(r"\ssrc=\"\"\s*", " ", html)
+    html = html.replace(
+        "https://star-motors.ru/wp-content/themes/wordpost_new1/img/logo-1.png",
+        f"{PAGES_ORIGIN}img/theme/logo-1.png",
+    )
+    for i in range(1, 10):
+        html = html.replace(
+            f"https://star-motors.ru/wp-content/uploads/2016/07/{i}.png",
+            f"{PAGES_ORIGIN}img/services/{i}.png",
+        )
+    html = html.replace(
+        'href="https://star-motors.ru/kontakty/" class="accent"',
+        'href="https://star-motors.ru/kontakty/"',
+    )
+    html = html.replace(
+        'href="#catalog">Цены</a>',
+        'href="#catalog" class="accent">Цены</a>',
+    )
     return html
 
 
-def build_prices_from_data() -> str:
+def build_prices_entry_content() -> str:
     data = json.loads((ROOT / "data" / "site-data.json").read_text(encoding="utf-8"))
     section_ids = {
         "ТО": "section-to",
@@ -117,8 +165,7 @@ def build_prices_from_data() -> str:
         for c in section_ids
     )
     parts = [
-        '<section id="catalog" class="sm-home-band sm-home-band--light">',
-        '<div class="sm-home-wrap entry-content">',
+        '<div class="entry-content">',
         "<h1>Цены на услуги автотехцентра</h1>",
         "<p>Ниже представлен подробный перечень услуг и ориентировочные цены на работы в нашем автосервисе.</p>",
         f'<div class="toc"><h3>Содержание:</h3><ul>{toc}</ul></div>',
@@ -146,19 +193,39 @@ def build_prices_from_data() -> str:
         "<p><em>* — Ориентировочные цены. Точная смета зависит от марки и модели автомобиля. "
         "Уточнить: +7 (495) 995-01-01</em></p>"
     )
-    parts.append("</div></section>")
+    parts.append('<div class="pagination_list"></div></div>')
     return "\n".join(parts)
+
+
+def build_ceny_main() -> str:
+    content = build_prices_entry_content()
+    return f"""<div id="wrapper" class="container">
+  <div class="crumb col-xs-12">
+    <nav class="kama_breadcrumbs" aria-label="Навигация по сайту">
+      <span><a href="#top">Главная</a> » </span>Цены
+    </nav>
+  </div>
+  <div id="main" class="row content">
+    <div id="sidebar" class="widget-area col-md-3 col-sm-4 col-xs-12 left-menu">
+      <span class="hidden-xs"> </span>
+    </div>
+    <div class="col-md-9 col-sm-8 col-xs-12 content-block">
+      <div id="wordpost_content" class="col-md-12 col-sm-12 col-xs-12">
+        <a id="catalog"></a>
+        <div id="post-11" class="post-11 page type-page status-publish hentry">
+          {content}
+          <div class="entry-meta"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>"""
 
 
 def main() -> None:
     header = sanitize(EX.joinpath("header.html").read_text(encoding="utf-8"))
-    main_html = sanitize(EX.joinpath("main.html").read_text(encoding="utf-8"))
+    main_html = build_ceny_main()
     footer = sanitize(EX.joinpath("footer.html").read_text(encoding="utf-8"))
-    prices = build_prices_from_data()
-
-    # inject prices before closing main
-    main_html = main_html.replace("</main>", prices + "\n</main>", 1)
-
     inline_styles = build_inline_styles()
 
     page = f"""<!DOCTYPE html>
@@ -167,18 +234,16 @@ def main() -> None:
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <base href="{PAGES_ORIGIN}" />
-  <title>Star Motors — автосервис в Строгино</title>
-  <meta name="description" content="Автосервис Star Motors — ремонт и ТО иномарок в Москве, Строгино." />
+  <title>Цены — Star Motors, автосервис в Строгино</title>
+  <meta name="description" content="Прайс-лист автосервиса Star Motors — ремонт и ТО иномарок в Москве, Строгино." />
   <link rel="icon" href="https://star-motors.ru/wp-content/themes/wordpost_new1/images/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="{FONT_EXO}" rel="stylesheet" />
   <link rel="stylesheet" href="{FONT_AWESOME}" />
   {inline_styles}
-  <link rel="stylesheet" href="{PAGES_ORIGIN}css/site.bundle.css" />
-  <link rel="stylesheet" href="{PAGES_ORIGIN}css/demo.css" />
 </head>
-<body class="home wp-theme-wordpost_new1 wordpost" id="top">
+<body class="page page-id-11 wp-theme-wordpost_new1 wordpost" id="top">
 {header}
 {main_html}
 <div class="clear"></div>
@@ -189,7 +254,7 @@ def main() -> None:
 </html>
 """
     ROOT.joinpath("index.html").write_text(page, encoding="utf-8")
-    print("Built index.html + css/site.bundle.css")
+    print("Built index.html (ceny layout) + css/site.bundle.css")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-/* Demo overrides only — main design from star-motors.ru theme CSS */
+/* Demo overrides — restore original Star Motors layout visibility */
 .demo-note {
   margin: 0;
   padding: 10px 16px;
@@ -15,4 +15,161 @@
 
 #cb-root {
   z-index: 999999 !important;
+}
+
+/* Theme hides breadcrumbs by default */
+.crumb {
+  display: block !important;
+}
+
+/* Center content like original Bootstrap layout */
+@media (min-width: 992px) {
+  #wrapper.container {
+    max-width: 1170px !important;
+    width: auto !important;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .site-header .header-top-top .container,
+  .site-header .header-top-middle .container,
+  .site-header .header-top-bottom .container,
+  .site-header .header-bottom .container,
+  .site-footer .container {
+    max-width: 1170px !important;
+    width: auto !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Price page typography */
+#wordpost_content .entry-content h1 {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.75em;
+}
+
+#wordpost_content .entry-content > p {
+  text-align: center;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.entry-content .toc {
+  margin: 1.5em auto 2em;
+  max-width: 640px;
+}
+
+.entry-content .toc h3 {
+  font-size: 1.1em;
+  margin-bottom: 0.5em;
+}
+
+.entry-content .toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: 2em;
+}
+
+.entry-content .toc li {
+  position: relative;
+  padding-left: 1.25em;
+  margin-bottom: 0.35em;
+  break-inside: avoid;
+}
+
+.entry-content .toc li::before {
+  content: "★";
+  position: absolute;
+  left: 0;
+  color: #d40000;
+  font-size: 0.75em;
+  top: 0.15em;
+}
+
+.entry-content .toc a {
+  color: #0066cc;
+  text-decoration: underline;
+}
+
+.entry-content h2 {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 1.35em;
+  margin: 2em 0 1em;
+}
+
+.price-table {
+  margin: 0 auto 2em;
+  max-width: 900px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #ddd;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+
+.price-table tr td {
+  padding: 0.65em 1em;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.price-table tr:first-child td {
+  background: #f7f7f7;
+  font-weight: 700;
+}
+
+.price-table .name-col,
+.price-table tr td:first-child {
+  text-align: left;
+}
+
+.price-table .price-col,
+.price-table tr td:last-child {
+  text-align: right;
+  color: #d40000;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.price-table tr:first-child td:last-child {
+  color: inherit;
+}
+
+.price-table tr td:first-child::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #888;
+  border-radius: 50%;
+  margin-right: 0.65em;
+  vertical-align: middle;
+}
+
+.price-table tr:first-child td::before {
+  content: none;
+}
+
+.price-table tr:hover td {
+  background-color: #fff0f0;
+}
+
+.price-table tr:hover td:last-child {
+  color: #fff;
+  background-color: #d40000;
+}
+
+/* Active nav item on prices demo */
+.site-header .header-top-bottom .main-menu a[href="#catalog"].accent,
+.site-header .header-top-bottom .main-menu a.accent {
+  background-color: #d40000;
 }
