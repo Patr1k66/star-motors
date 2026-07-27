@@ -186,7 +186,7 @@ bot_config = {
     ],
     "system_prompt": prompt,
     "escalation_contact": data["contacts"]["phone"],
-    "primary_color": "#1d4ed8",
+    "primary_color": "#d40000",
     "welcome_message": "Здравствуйте! Я онлайн-консультант автосервиса Star Motors. Подскажу, какие работы могут понадобиться, и помогу сориентироваться по ценам — напишите марку авто и что беспокоит.",
 }
 
