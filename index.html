@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Star Motors — автосервис в Строгино</title>
+    <meta
+      name="description"
+      content="Star Motors — автосервис для иномарок и китайских автомобилей в Москве. ТО, диагностика, ремонт двигателя, КПП, подвески."
+    />
+    <link rel="icon" href="https://star-motors.ru/wp-content/themes/wordpost_new1/images/favicon.ico" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container header__inner">
+        <a class="logo" href="#top">
+          <img id="logo-img" src="" alt="Star Motors" />
+        </a>
+        <nav class="nav" id="main-nav">
+          <a href="#catalog">Цены</a>
+          <a href="#reviews">Отзывы</a>
+          <a href="#photos">Фото</a>
+          <a href="#about">О нас</a>
+          <a href="#contacts">Контакты</a>
+        </nav>
+        <a class="header__phone" id="header-phone" href="tel:+74959950101"></a>
+        <button class="burger" id="burger" aria-label="Меню">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="container hero__grid">
+          <div class="hero__card">
+            <p class="hero__badge" id="hero-status">Открыто</p>
+            <h1 id="hero-title">Star Motors</h1>
+            <p class="hero__subtitle" id="hero-subtitle"></p>
+            <p class="hero__categories" id="hero-categories"></p>
+            <div class="hero__rating">
+              <span class="stars">★★★★★</span>
+              <strong id="hero-rating">4.7</strong>
+              <span id="hero-review-count">128 отзывов</span>
+              <span class="hero__maps">автосервис · Строгино</span>
+            </div>
+            <div class="hero__actions">
+              <a class="btn btn--primary" id="hero-phone-btn" href="tel:+74959950101">Позвонить</a>
+              <a class="btn btn--secondary" id="hero-prices-btn" href="#catalog">Посмотреть цены</a>
+              <a class="btn btn--ghost" id="hero-route-btn" href="#" target="_blank" rel="noopener">Как доехать</a>
+            </div>
+            <p class="hero__address" id="hero-address"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="catalog">
+        <div class="container">
+          <h2 class="section__title">Цены на услуги</h2>
+          <p class="section__note">Ориентировочные цены «от …». Точная смета зависит от марки и модели автомобиля.</p>
+          <div class="catalog-tabs" id="catalog-tabs"></div>
+          <div class="catalog-grid" id="catalog-grid"></div>
+        </div>
+      </section>
+
+      <section class="section section--gray" id="reviews">
+        <div class="container">
+          <div class="section__head">
+            <h2 class="section__title">Отзывы</h2>
+            <div class="rating-summary">
+              <strong id="reviews-rating">4.7</strong>
+              <span id="reviews-count">128 отзывов</span>
+            </div>
+          </div>
+          <div class="reviews-grid" id="reviews-grid"></div>
+        </div>
+      </section>
+
+      <section class="section" id="photos">
+        <div class="container">
+          <h2 class="section__title">Направления работ</h2>
+          <div class="photos-grid" id="photos-grid"></div>
+        </div>
+      </section>
+
+      <section class="section section--gray" id="about">
+        <div class="container">
+          <h2 class="section__title">О нас</h2>
+          <p class="about__lead" id="about-lead"></p>
+          <div class="features-grid" id="features-grid"></div>
+        </div>
+      </section>
+
+      <section class="section" id="contacts">
+        <div class="container contacts">
+          <div>
+            <h2 class="section__title">Контакты</h2>
+            <ul class="contacts__list">
+              <li><strong>Адрес:</strong> <span id="contacts-address"></span></li>
+              <li><strong>Телефон:</strong> <a id="contacts-phone" href="tel:+74959950101"></a></li>
+              <li><strong>Режим работы:</strong> <span id="contacts-schedule"></span></li>
+            </ul>
+          </div>
+          <div class="map-wrap">
+            <iframe
+              id="map-frame"
+              title="Карта — Star Motors"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <div>
+          <p id="legal-name"></p>
+          <p id="legal-ogrn"></p>
+          <p id="legal-inn"></p>
+        </div>
+        <p class="footer__note">Демо-копия сайта с AI-консультантом · данные с <a href="https://star-motors.ru/" target="_blank" rel="noopener">star-motors.ru</a></p>
+      </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script
+      src="js/chat-widget.js"
+      data-bot-id="star-motors"
+      data-api-url="https://chat-bot-api-lovat.vercel.app"
+      data-auto-open-ms="5000"
+      defer
+    ></script>
+  </body>
+</html>
