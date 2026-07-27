@@ -78,6 +78,50 @@ def build_inline_styles() -> str:
     return "<style>\n" + "\n".join(parts) + "\n</style>"
 
 
+def rewrite_internal_links(html: str) -> str:
+    """Keep navigation on the demo site so the chat widget stays loaded."""
+    origin = PAGES_ORIGIN.rstrip("/")
+
+    def map_path(path: str) -> str:
+        path = path.split("#", 1)[0].split("?", 1)[0]
+        if not path or path == "/":
+            return f"{origin}/#top"
+        normalized = path.rstrip("/")
+        if normalized in ("/ceny", "ceny"):
+            return f"{origin}/#catalog"
+        if not path.startswith("/"):
+            path = "/" + path
+        return f"{origin}{path}"
+
+    def repl_absolute(m: re.Match[str]) -> str:
+        url = m.group(1)
+        if "/wp-content/" in url or "/wp-includes/" in url:
+            return m.group(0)
+        path = re.sub(r"^https?://star-motors\.ru", "", url)
+        return f'href="{map_path(path)}"'
+
+    def repl_root(m: re.Match[str]) -> str:
+        path = m.group(1)
+        if path.startswith("#"):
+            return m.group(0)
+        if path.startswith("wp-content/") or path.startswith("wp-includes/"):
+            return m.group(0)
+        return f'href="{map_path("/" + path)}"'
+
+    html = re.sub(r'href="(https?://star-motors\.ru[^"]*)"', repl_absolute, html)
+    html = re.sub(r'href="/([^"]+)"', repl_root, html)
+    html = html.replace('href="/"', f'href="{origin}/#top"')
+    html = html.replace(
+        'href="https://star-motors.ru/kontakty/" class="accent"',
+        f'href="{origin}/kontakty/"',
+    )
+    html = html.replace(
+        f'href="{origin}/#catalog">Цены</a>',
+        f'href="{origin}/#catalog" class="accent">Цены</a>',
+    )
+    return html
+
+
 def sanitize(html: str) -> str:
     html = re.sub(r'\sonclick="[^"]*"', "", html)
     html = re.sub(r"<noscript>.*?</noscript>", "", html, flags=re.S)
@@ -106,9 +150,6 @@ def sanitize(html: str) -> str:
     )
     html = html.replace('action="/#wpcf7-f10252-o1"', 'action="#"')
     html = html.replace('action="https://star-motors.ru/"', 'action="#"')
-    html = html.replace('href="/ceny/"', 'href="#catalog"')
-    html = html.replace('href="https://star-motors.ru/ceny/"', 'href="#catalog"')
-    html = html.replace('href="/"', 'href="#top"')
     html = re.sub(r"\ssrc=\"\"\s*", " ", html)
     html = html.replace(
         "https://star-motors.ru/wp-content/themes/wordpost_new1/img/logo-1.png",
@@ -119,15 +160,46 @@ def sanitize(html: str) -> str:
             f"https://star-motors.ru/wp-content/uploads/2016/07/{i}.png",
             f"{PAGES_ORIGIN}img/services/{i}.png",
         )
-    html = html.replace(
-        'href="https://star-motors.ru/kontakty/" class="accent"',
-        'href="https://star-motors.ru/kontakty/"',
-    )
-    html = html.replace(
-        'href="#catalog">Цены</a>',
-        'href="#catalog" class="accent">Цены</a>',
-    )
-    return html
+    return rewrite_internal_links(html)
+
+
+CHAT_SCRIPT = (
+    f'<script src="{PAGES_ORIGIN}js/chat-widget.js" '
+    'data-bot-id="star-motors" '
+    'data-api-url="https://chat-bot-api-lovat.vercel.app" '
+    'data-auto-open-ms="5000" defer></script>'
+)
+
+
+def build_subpage_shell() -> str:
+    return f"""<!DOCTYPE html>
+<html lang="ru-RU">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Star Motors — автосервис в Строгино</title>
+  <style>
+    html, body {{
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+    }}
+    #demo-frame {{
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }}
+  </style>
+</head>
+<body>
+  <iframe id="demo-frame" title="Star Motors"></iframe>
+  <script src="{PAGES_ORIGIN}js/demo-shell.js"></script>
+  {CHAT_SCRIPT}
+</body>
+</html>
+"""
 
 
 def build_prices_entry_content() -> str:
@@ -249,12 +321,15 @@ def main() -> None:
 <div class="clear"></div>
 {footer}
 <p class="demo-note">Демо-копия с AI-консультантом · данные с <a href="https://star-motors.ru/" target="_blank" rel="noopener">star-motors.ru</a></p>
-<script src="{PAGES_ORIGIN}js/chat-widget.js" data-bot-id="star-motors" data-api-url="https://chat-bot-api-lovat.vercel.app" data-auto-open-ms="5000" defer></script>
+{CHAT_SCRIPT}
 </body>
 </html>
 """
+    shell = build_subpage_shell()
     ROOT.joinpath("index.html").write_text(page, encoding="utf-8")
-    print("Built index.html (ceny layout) + css/site.bundle.css")
+    ROOT.joinpath("404.html").write_text(shell, encoding="utf-8")
+    ROOT.joinpath(".nojekyll").write_text("", encoding="utf-8")
+    print("Built index.html, 404.html (subpages + chat) + css/site.bundle.css")
 
 
 if __name__ == "__main__":
