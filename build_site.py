@@ -7,13 +7,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 EX = ROOT / "_extracted"
 
-AUTOPTIMIZE_CSS = (
-    "https://star-motors.ru/wp-content/cache/autoptimize/css/"
-    "autoptimize_single_b2b463a5bdb73833be2a6afbc1843ddd.css"
-)
 FONT_EXO = (
     "https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap"
 )
+LOCAL_STYLES = [
+    "css/bootstrap.min.css",
+    "css/font-awesome.css",
+    "css/menu-image.css",
+    "css/theme.css",
+    "css/demo.css",
+]
 
 
 def sanitize(html: str) -> str:
@@ -122,6 +125,10 @@ def main() -> None:
     # inject prices before closing main
     main_html = main_html.replace("</main>", prices + "\n</main>", 1)
 
+    styles_block = "\n".join(
+        f'  <link rel="stylesheet" href="{href}" />' for href in LOCAL_STYLES
+    )
+
     page = f"""<!DOCTYPE html>
 <html lang="ru-RU">
 <head>
@@ -133,8 +140,7 @@ def main() -> None:
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="{FONT_EXO}" rel="stylesheet" />
-  <link rel="stylesheet" href="{AUTOPTIMIZE_CSS}" />
-  <link rel="stylesheet" href="css/demo.css" />
+{styles_block}
 </head>
 <body class="home wp-theme-wordpost_new1 wordpost" id="top">
 {header}
