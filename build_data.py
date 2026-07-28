@@ -2,12 +2,16 @@
 """Parse star-motors.ru price page and generate site-data.json + bot config."""
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SOURCE = Path(r"C:\Users\tim25\.cursor\projects\c-Users-tim25-Desktop-code-chat-bot\agent-tools\8ed39082-996b-4ccc-8935-ed2d4e0d17b2.txt")
+sys.path.insert(0, str(ROOT.parent))
+from _chatbot_path import chatbot_root
+
+SOURCE = ROOT / "_ceny.html"
 if not SOURCE.exists():
-    SOURCE = ROOT.parent / "uploads" / "ceny-0.md"
+    SOURCE = chatbot_root() / "uploads" / "ceny-0.md"
 
 text = SOURCE.read_text(encoding="utf-8")
 lines = text.splitlines()
@@ -190,7 +194,7 @@ bot_config = {
     "welcome_message": "Здравствуйте! Я онлайн-консультант автосервиса Star Motors. Подскажу, какие работы могут понадобиться, и помогу сориентироваться по ценам — напишите марку авто и что беспокоит.",
 }
 
-bot_path = ROOT.parent / "backend" / "clients" / "star-motors.json"
+bot_path = chatbot_root() / "backend" / "clients" / "star-motors.json"
 bot_path.write_text(json.dumps(bot_config, ensure_ascii=False, indent=2), encoding="utf-8")
 print(f"Catalog items: {len(catalog)}")
 print("Updated site-data.json and", bot_path)
