@@ -192,6 +192,15 @@ bot_config = {
     "escalation_contact": data["contacts"]["phone"],
     "primary_color": "#d40000",
     "welcome_message": "Здравствуйте! Я онлайн-консультант автосервиса Star Motors. Подскажу, какие работы могут понадобиться, и помогу сориентироваться по ценам — напишите марку авто и что беспокоит.",
+    "quick_replies": [
+        "Цены на ремонт",
+        "Диагностика авто",
+        "Адрес и часы работы",
+        "Как записаться?",
+    ],
+    "action_buttons": [
+        {"label": "Позвонить", "type": "phone", "value": "+74959950101"},
+    ],
 }
 
 bot_path = chatbot_root() / "backend" / "clients" / "star-motors.json"
